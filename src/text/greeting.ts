@@ -1,22 +1,13 @@
-import { Context } from 'telegraf';
+import type { Context, Filter } from 'grammy';
 import createDebug from 'debug';
+import { reply } from '../core';
 
 const debug = createDebug('bot:greeting_text');
 
-const replyToMessage = (ctx: Context, messageId: number, string: string) =>
-  ctx.reply(string, {
-    reply_parameters: { message_id: messageId },
-  });
-
-const greeting = () => async (ctx: Context) => {
+const greeting = () => async (ctx: Filter<Context, 'message'>) => {
   debug('Triggered "greeting" text command');
-
-  const messageId = ctx.message?.message_id;
-  const userName = `${ctx.message?.from.first_name} ${ctx.message?.from.last_name}`;
-
-  if (messageId) {
-    await replyToMessage(ctx, messageId, `Hello, ${userName}!`);
-  }
+  const userName = `${ctx.message.from.first_name} ${ctx.message.from.last_name}`;
+  await reply(ctx, `Hello, ${userName}!`, { messageId: ctx.message.message_id });
 };
 
 export { greeting };

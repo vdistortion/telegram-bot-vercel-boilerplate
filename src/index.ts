@@ -1,21 +1,20 @@
-import { Telegraf } from 'telegraf';
-
+import { Bot, webhookCallback } from 'grammy';
+import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { development, production } from './core';
 import { about } from './commands';
 import { greeting } from './text';
-import { VercelRequest, VercelResponse } from '@vercel/node';
-import { development, production } from './core';
 
-const BOT_TOKEN = process.env.BOT_TOKEN || '';
-const ENVIRONMENT = process.env.NODE_ENV || '';
-
-const bot = new Telegraf(BOT_TOKEN);
+const { TELEGRAM_BOT_TOKEN, NODE_ENV } = process.env;
+export const bot = new Bot(TELEGRAM_BOT_TOKEN!);
 
 bot.command('about', about());
-bot.on('message', greeting());
+bot.on('message:text', greeting());
 
 //prod mode (Vercel)
 export const startVercel = async (req: VercelRequest, res: VercelResponse) => {
-  await production(req, res, bot);
+  await production();
+  webhookCallback(bot, 'https')(req, res);
 };
+
 //dev mode
-ENVIRONMENT !== 'production' && development(bot);
+NODE_ENV !== 'production' && development(bot);
